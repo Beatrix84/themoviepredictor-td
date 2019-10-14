@@ -37,6 +37,10 @@ def insertQuery(args):
 def insertMovieQuery(args):
     return ("INSERT INTO {} (`title`, `duration`, `original_title`, `rating`) VALUES ('{}', '{}', '{}', '{}')".format(args.context, args.title, args.duration, args.original_title, args.rating))
 
+def importCsvQuery(row):
+    return ("INSERT INTO {} (row['title'], ['duration'], ['original_title'], ['rating']) VALUES ('{}', '{}', '{}', '{}')".format(args.context, args.title, args.duration, args.original_title, args.rating))
+
+
 def find(table, id):
     cnx = connectToDatabase()
     cursor = createCursor(cnx)
@@ -72,6 +76,16 @@ def insertMovie(args):
     closeCursor(cursor)
     disconnectDatabase(cnx)
 
+
+def importCsv(row):
+    cnx = connectToDatabase()
+    cursor = createCursor(cnx)
+    cursor.execute(importCsvQuery(row))
+    cnx.commit()
+    closeCursor(cursor)
+    disconnectDatabase(cnx)
+
+
 def printPerson(person):
     print("#{}: {} {}".format(person['id'], person['firstname'], person['lastname']))
 
@@ -89,6 +103,9 @@ list_parser.add_argument('--export' , help='Chemin du fichier exportÃ©')
 
 find_parser = action_subparser.add_parser('find', help='Trouve une entitÃ© selon un paramÃ¨tre')
 find_parser.add_argument('id' , help='Identifant Ã  rechercher')
+
+import_parser = action_subparser.add_parser('import', help='Import csv file')
+import_parser.add_argument('--file', help='Path to the file')
 
 insert_parser = action_subparser.add_parser('insert', help='Insert name')
 insert_parser.add_argument('--firstname', help='firstName of people to insert')
@@ -134,3 +151,9 @@ if args.context == "movies":
             printMovie(movie)
     if args.action == "insert":
         insertMovie(args)
+    if args.action == "import":
+        with open('new_movies.csv', 'r', encoding= 'utf-8') as csvfile:
+            reader = csv.DictReader(csvfile, lineterminator= '\n')
+            for row in reader:
+                print(row['title'], row['original_title'], row['rating'], row['release_date'], row['duration'])
+            csvfile.close()
