@@ -10,6 +10,43 @@ import mysql.connector
 import sys
 import argparse
 import csv
+import requests
+from bs4 import BeautifulSoup
+
+r = requests.get('https://fr.wikipedia.org/wiki/Joker_(film,_2019)')
+soup = BeautifulSoup(r.text, 'html.parser')
+fiche_technique = soup.find(id="Fiche_technique") 
+#Find the fiche technique  and assign to id fiche technique
+
+item_h2 = fiche_technique.parent
+#go up to parent h2
+
+#go to the sibling of <h2> = <ul>
+ulist = item_h2.findNext('ul')
+
+#got to the <li>
+items_li = ulist.findChildren('li')
+
+#create an empty fucntion for the dictionary table
+movie_dict={}
+
+#Dictionary for Key/Value table
+for item in items_li:
+    #function split to separate before and after the ':' and define the key
+    key=item.getText().split(":")[0] #add the getText to change every value in text
+    value=item.find(['a', 'i'])#define the value column and find the 'a' and the 'i'
+    if value :
+        movie_dict[key] = value.getText()
+
+print(movie_dict)
+
+    
+
+
+
+
+
+exit()
 
 def connectToDatabase():
     return mysql.connector.connect(user='predictor', password='predictor',
