@@ -12,6 +12,10 @@ import argparse
 import csv
 import requests
 from bs4 import BeautifulSoup
+from datetime import datetime
+import locale
+
+locale.setlocale(locale.LC_ALL, 'fr_FR')#for the language code ex: en_GB or en_US
 
 r = requests.get('https://fr.wikipedia.org/wiki/Joker_(film,_2019)')
 soup = BeautifulSoup(r.text, 'html.parser')
@@ -22,28 +26,47 @@ item_h2 = fiche_technique.parent
 #go up to parent h2
 
 #go to the sibling of <h2> = <ul>
-ulist = item_h2.findNext('ul')
+item_ul = item_h2.find_next_sibling('ul')
 
-#got to the <li>
-items_li = ulist.findChildren('li')
+#got to the <li> or item_ul.findAll
+items_li = item_ul.find_all("li", recursive=False)
 
-#create an empty fucntion for the dictionary table
-movie_dict={}
-
-#Dictionary for Key/Value table
 for item in items_li:
-    #function split to separate before and after the ':' and define the key
-    key=item.getText().split(":")[0] #add the getText to change every value in text
-    value=item.find(['a', 'i'])#define the value column and find the 'a' and the 'i'
-    if value :
-        movie_dict[key] = value.getText()
-
-print(movie_dict)
-
+    splitted_li = item.get_text().split(':')
+    data_type = splitted_li[0].strip()# strip to remove the space
+    data_value = splitted_li[1].strip()
     
+    if data_type == "Titre original":
+        title = data_value
+    if data_type == "Durée":
+        duration = data_value.replace("minutes","").strip() #replace minute with nothing and remove the space
+    if data_type == "Dates de sortie" :
+        release_dates_li_list = item.find_all("li")#to show all the item for the date
+        for release_date_li in release_dates_li_list:
+            release_date_splitted = release_date_li.get_text().split(':')
+            release_country = release_date_splitted[0].strip()
+            release_date_as_string = release_date_splitted[1].strip()
+            if release_country =="France":
+                release_date_object = datetime.strptime(release_date_as_string, '%d %B %Y')#to identify the date syntax and then we could manipulate it ex:9 octobre 2019
+                #in our database sql the date synatx is year-month-day
+                release_date_sql_string = release_date_object.strftime('%Y-%m-%d')
 
+    if data_type == "Classification" :
+        rating_li_list = item.find_all("li")#to show all the item for the date
+        for rating_li in rating_li_list:
+            rating_splitted = rating_li.get_text().split(':')
+            rating_country = rating_splitted[0].strip()
+            rating_string = rating_splitted[1].strip() #Not allowed to under 12
+            if rating_country =="France":
+                if rating_string.find('12') != -1:
+                    rating = '- 12'
 
+print('title =', title)
+print('duration =', duration)
+print('release_date = ', release_date_sql_string)
+print('rating =', rating)
 
+print()
 
 
 exit()
