@@ -4,7 +4,7 @@ CREATE TABLE `movies` (
 	`original_title` varchar(255) NOT NULL,
 	`synopsis` TEXT DEFAULT NULL,
 	`duration` int NOT NULL,
-	`rating` enum('TP', '-12', '-16', '-18') NOT NULL,
+	`rating` enum('TP', '-12', '-16', '-18') DEFAULT 'TP',
 	`production_budget` int DEFAULT NULL,
 	`marketing_budget` int DEFAULT NULL,
 	`release_date` DATE NOT NULL,
