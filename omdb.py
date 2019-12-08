@@ -5,9 +5,9 @@ from datetime import datetime
 import os
 import locale
 
-#from dotenv import load_dotenv
+from dotenv import load_dotenv
 
-#load_dotenv()
+load_dotenv()
 
 omdb_api_key = os.environ['OMDB_API_KEY']
 
@@ -24,11 +24,13 @@ class Omdb:
         title = data['Title']
         release_date = datetime.strptime(data['Released'], '%d %b %Y').date()
         duration = None
+        score = data['imdbRating']
         rating = data['Rated']
         if rating == "PG-13":
             rating = "-12"
-        elif rating in ["PG", "G"]:
+        elif rating in ["PG", "G", "R"]:
             rating = "TP"
+        synopsis = data['Plot']
         
             
         
@@ -38,9 +40,12 @@ class Omdb:
         #print(release_date)
         #print(duration)
         #print(rating)
+        #print(score)
 
         movie = Movie(title, original_title, duration, release_date, rating)
         movie.imdb_id = imdb_id
+        movie.score = score
+        movie.synopsis = synopsis
         return movie
 
-Omdb().omdb_get_movie('tt3896198')
+Omdb().omdb_get_movie('tt4520988')
